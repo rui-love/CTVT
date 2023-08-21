@@ -123,13 +123,19 @@ if __name__ == "__main__":
                 # trg_len = tuple(int)[batch size]
 
                 eid_result, rate_result = model(src, src_len, trg_eid, trg_rate)
+                # break
                 # eid_result = [trg len, batch size, id one hot output dim]
                 # rate_result = [trg len, batch size]
+                mask = trg_eid != 0
+                loss = (
+                    criterion_rate(rate_result[mask], trg_rate[mask]) * args.rate_weight
+                )
                 eid_result = eid_result.reshape(-1, eid_result.shape[-1])
                 trg_eid = trg_eid.reshape(-1)
-                mask = (trg_eid != 0).float()
-                loss = criterion_eid(eid_result, trg_eid) * mask
-                loss += criterion_rate(rate_result, trg_rate) * mask * args.rate_weight
+                mask = trg_eid != 0
+                loss += criterion_eid(
+                    eid_result[mask], trg_eid[mask]
+                )  # 进入到loss计算中的数不能是负数
 
                 valid_loss[epoch] += loss.item()
 
@@ -151,16 +157,19 @@ if __name__ == "__main__":
                 # trg_len = tuple(int)[batch size]
 
                 eid_result, rate_result = model(src, src_len, trg_eid, trg_rate)
+                # break
                 # eid_result = [trg len, batch size, id one hot output dim]
                 # rate_result = [trg len, batch size]
-                eid_result = eid_result.reshape(-1, eid_result.shape[-1])
-                trg_eid = trg_eid.reshape(-1)
-                mask = (trg_eid != 0).float()
-                loss = criterion_eid(eid_result[mask], trg_eid[mask])
-                loss += (
+                mask = trg_eid != 0
+                loss = (
                     criterion_rate(rate_result[mask], trg_rate[mask]) * args.rate_weight
                 )
-                print(type(loss), loss.shape)
+                eid_result = eid_result.reshape(-1, eid_result.shape[-1])
+                trg_eid = trg_eid.reshape(-1)
+                mask = trg_eid != 0
+                loss += criterion_eid(
+                    eid_result[mask], trg_eid[mask]
+                )  # 进入到loss计算中的数不能是负数
 
                 test_loss[epoch] += loss.item()
 
