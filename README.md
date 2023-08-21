@@ -3,6 +3,7 @@
     main.py
 
 ## dataset
+
 集成了datset类和collate_fn算法，每次返回
 
     src = [src len, batch size, 3]      # grid_x, grid_y, tid（第几个时间步）
