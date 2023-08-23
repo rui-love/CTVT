@@ -436,4 +436,6 @@ interactions governing the underlying dynamics. In these settings, parametric OD
 
 ## Websites and Blogs
 
+* Deep Implicit Layers(Zico Kolter, David Duvenaud, and Matt Johnson)[link](http://implicit-layers-tutorial.org/)
 * Scientific ML Blog (Chris Rackauckas and SciML): [link](http://www.stochasticlifestyle.com/)
+* Dynamical System Modeling Using Neural ODE(Matlab)[link](https://ww2.mathworks.cn/help/deeplearning/ug/dynamical-system-modeling-using-neural-ode.html)
