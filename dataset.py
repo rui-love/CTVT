@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 
 class TrajDataset(torch.utils.data.Dataset):
-    def __init__(self, traj):
+    def __init__(self, traj, keep_ratio=0.5, ds_type="random"):
         # init函数的作用：输入原始数据
 
         self.traj = traj
@@ -19,6 +19,9 @@ class TrajDataset(torch.utils.data.Dataset):
         self.trg_rate = []
         self.src_len = []
         self.trg_len = []
+
+        self.keep_ratio = keep_ratio
+        self.ds_type = ds_type
 
         self.get_data()
 
@@ -40,7 +43,9 @@ class TrajDataset(torch.utils.data.Dataset):
 
     def get_data(self):
         for traj in tqdm(self.traj):
-            traj_sample = self.downsample_traj(traj[:, [0, 1, 4, 2, 3]])
+            traj_sample = self.downsample_traj(
+                traj[:, [0, 1, 4, 2, 3]], self.ds_type, self.keep_ratio
+            )
             # grid_x, grid_y, src_lat, src_lng, trg_lat, trg_lng, ratio, edge_id, tid
 
             traj = np.concatenate((np.zeros((1, 9)), traj))
