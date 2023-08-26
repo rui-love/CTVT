@@ -1,0 +1,99 @@
+name: Publish
+on:
+  release:
+    types: [published]
+    branches: [master]
+
+jobs:
+  test_and_build_and_publish:
+    strategy:
+      matrix:
+        python-version: [ 3.6, 3.8 ]
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Check version
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torchcde
+          pypi_info=$(pip list | grep torchcde)
+          pypi_version=$(echo ${pypi_info} | cut -d " " -f2)
+          python -m pip uninstall -y torchcde
+          python setup.py install
+          master_info=$(pip list | grep torchcde)
+          master_version=$(echo ${master_info} | cut -d " " -f2)
+          python -m pip uninstall -y torchcde
+          python -c "import itertools as it;
+          import sys;
+          _, pypi_version, master_version = sys.argv;
+          pypi_version_ = [int(i) for i in pypi_version.split('.')];
+          master_version_ = [int(i) for i in master_version.split('.')];
+          pypi_version__ = tuple(p for m, p in it.zip_longest(master_version_, pypi_version_, fillvalue=0));
+          master_version__ = tuple(m for m, p in it.zip_longest(master_version_, pypi_version_, fillvalue=0));
+          sys.exit(master_version__ <= pypi_version__)" ${pypi_version} ${master_version}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install flake8 pytest wheel
+
+      - name: Lint with flake8
+        run: |
+          python -m flake8 .
+
+      # For some reason egg files see to be getting uploaded to PyPI;
+      # not sure why they're being created.
+      - name: Build and install sdist
+        shell: bash
+        run: |
+          python -m pip install torch==1.9.0
+          python setup.py sdist bdist_wheel
+          rm -f dist/*.egg
+          python -m pip install dist/*.tar.gz
+
+      # Happens after install the sdist, so that PyTorch is already installed.
+      # We then detect the version of PyTorch installed, and install the
+      # appropriate version of Signatory.
+      - name: Install Signatory
+        if: matrix.os != 'macos-latest'
+        shell: bash
+        run: |
+          signatory_version=$(python -c "import re
+          import subprocess
+          version_msg = subprocess.run('pip install --use-deprecated=legacy-resolver signatory==', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+          version_re = re.compile(rb'from versions: ([0-9\. ,]*)\)')
+          last_version = version_re.search(version_msg.stderr).group(1).split(b', ')[-1].decode('utf-8').split('.')
+          assert len(last_version) == 6
+          last_version = '.'.join(last_version[:3])
+          print(last_version)")
+          torch_info=$(pip list | grep '^torch ')
+          torch_version=$(echo ${torch_info} | cut -d " " -f2)
+          python -m pip install signatory==${signatory_version}.${torch_version}
+
+      - name: Run sdist tests
+        run: |
+          python -m pytest
+          python -m pip uninstall -y torchcde
+          
+      - name: Run bdist_wheel tests
+        shell: bash
+        run: |
+          python -m pip install dist/*.whl
+          python -m pytest
+          python -m pip uninstall -y torchcde
+
+      - name: Publish to PyPI
+        if: matrix.python-version == '3.8' && matrix.os == 'ubuntu-latest'
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: ${{ secrets.pypi_username }}
+          password: ${{ secrets.pypi_password }}
