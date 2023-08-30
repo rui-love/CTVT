@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Time Series Classification Website</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/page_css/index.css" rel="stylesheet">
+    <link href="css/mystyle.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'  type='text/css'>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.5.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script>
+	$(window).load(function(){
+	(function() {
+            $('form > input').keyup(function() {
+
+                var empty = false;
+                $('form > input').each(function() {
+                        if ($(this).val() == '') {
+                                empty = true;
+                        }
+                });
+
+                if (empty) {
+                        $('#submit').attr('disabled', 'disabled');
+                } else {
+                        $('#submit').removeAttr('disabled');
+                }
+            });
+	})()
+	});
+	</script>
+
+</head>
+    
+   <header class="header--fixed">
+    <nav class="navbar navbar-inverse navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="glyphicon glyphicon-th" style="color: white;"></span>
+                </button>
+                <a class="navbar-brand" href="index.php">Time Series Classification</a>
+            </div>
+            
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul id="navbar-list" class="nav navbar-nav">
+                    <li><a href="index.php"><b>Home</b></a></li>
+                    <li><a href="dataset.php"><b>Datasets</b></a></li>
+                    <li><a href="algorithm.php"><b>Algorithms</b></a></li>
+                    <li><a href="results.php"><b>Results</b></a></li>
+                    <li><a href="researchers.php"><b>Researchers</b></a></li>
+                    <li><a href="code.php"><b>Code</b></a></li>
+                    <li><a href="bibliography.php"><b>Bibliography</b></a></li>
+                    <!--<li><a href="blog.php"><b>Blog</b></a></li>-->
+                    <li class="dropdown">
+                    	<a class="dropdown-toggle" data-toggle="dropdown"><b>UEA Papers <span class="caret"></span></b></a>
+                    	<ul class="dropdown-menu">
+                    		<li><a href="papers.php?Name=Bake off (2017)">Bake off (2017)</a></li><li><a href="papers.php?Name=CAWPE (2019)">CAWPE (2019)</a></li><li><a href="papers.php?Name=CIF (2020)">CIF (2020)</a></li><li><a href="papers.php?Name=HIVE-COTE 1.0 (2020)">HIVE-COTE 1.0 (2020)</a></li><li><a href="papers.php?Name=HIVE-COTE 2.0 (2021)">HIVE-COTE 2.0 (2021)</a></li><li><a href="papers.php?Name=HIVE-COTE alpha (2018)">HIVE-COTE alpha (2018)</a></li><li><a href="papers.php?Name=Multivariate bake off (2020)">Multivariate bake off (2020)</a></li><li><a href="papers.php?Name=TDE (2020)">TDE (2020)</a></li>						</ul>
+                    </li>
+                    <li><a href="aboutus.php"><b>About Us</b></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<script src="js/headroom.js"></script>
+<script src="js/headroom-script.js"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G7G0XKXBKF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-G7G0XKXBKF');
+</script>    <body id="Home">
+    	<div class="container-fluid content">
+        	<!--Top Intro Secton -->
+        	<div id="top-section" class="row">
+            	<div class="container-fluid">
+                    <!--Title-->
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div id="title">
+                                <h1>Welcome to the Time Series Machine Learning Website</h1>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description box -->
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-8 left">
+                            <!-- Description info box -->
+                            <div id="description">
+                                    <p>  <h2> This site contains data, reference results and links to code for Time Series Classification (TSC), Time Series Clustering (TSCL) and Time Series Extrinsic Regression (TSER)
+                                    </h2>
+                                    <p>  <h3> The classification data form part of the  <a href="https://www.cs.ucr.edu/~eamonn/time_series_data_2018/">UCR time series archive</a>. Regression data are part of the <A href="http://tseregression.org/"> TSER repository</A>. We thank everyone else involved in donating to and maintaining these archives.</h3>
+</p>
+                                    
+                                    <p>  <h3> The scikit-learn compatible <a href ="https://www.aeon-toolkit.org/en/latest/"> aeon toolkit</a> contains the state of the art algorithms for time series classification. All of the datasets and results stored here are directly accessible in code using aeon.</h3>
+</p>
+<h3>Checkout our <a href ="https://github.com/aeon-toolkit/aeon"> GitHub</a>, join the  <a href ="https://join.slack.com/t/aeon-toolkit/shared_invite/zt-1plkevy4x-vAg1dAUXcuoR38FjY9nxzg"> aeon slack</a> and follow aeon <a href ="https://twitter.com/aeon_toolkit">on twitter</a>. </h3>
+
+
+                                <p><h3>  <a href ="https://ecml-aaltd.github.io/aaltd2023/">The Advanced Analytics and Learning on Temporal Data (AALTD)</a> workshop is back for the eighth time on 18th Sept in Turin. The workshop is part of the ECML/PKDD converence and selected papers will be published in LNCS. See, for example, <a href ="https://link.springer.com/book/10.1007/978-3-031-24378-3">2022</a> and <a href ="https://link.springer.com/book/10.1007/978-3-030-91445-5">2021</a> versions. </h3>
+                                </p>
+                                <p>
+                                
+                                <p><h3> The Human Activity Segmentation Challenge is part of ECML/PKDD and the AALTD workshop, link to results to follow soon.</h3>
+                                </p>
+                                <p>  <h2>Selected Recent TSC Papers</h2>
+                                </p>
+                                <p> <ul> 
+       
+<li>25/05/2023:<a href="https://arxiv.org/abs/2304.13029">Bake off redux: a review and experimental evaluation of recent time series classification algorithms</a> arXiv, 2023
+</li>       
+<li>02/05/2023:<a href="https://arxiv.org/abs/2305.01429">Unsupervised Feature Based Algorithms for Time Series Extrinsic Regression</a> arXiv, 2023
+</li>
+
+<li>21/03/2023:<a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=MHs3X9YAAAAJ&sortby=pubdate&citation_for_view=MHs3X9YAAAAJ:N4u4nq0IxgcC">Scalable Classifier-Agnostic Channel Selection for Multivariate Time Series Classification</a> Data Min. Know. Disc., 2023
+</li>
+                                    <li>06/02/2023:<a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=_1tpf8AAAAAJ&sortby=pubdate&citation_for_view=_1tpf8AAAAAJ:XDrR66g3YHsC">Deep Learning for Time Series Classification and Extrinsic Regression: A Current Survey</a> arxiv
+                                    </li>
+<li>24/01/2023: <A href = "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=_1tpf8AAAAAJ&sortby=pubdate&citation_for_view=_1tpf8AAAAAJ:6ZzL7HXColQC"> Parameterizing the cost function of Dynamic Time Warping with application to time series classification</A>  arxiv
+</li>
+                                    <li>01/09/2022:<a href="https://arxiv.org/abs/2102.00457">MultiRocket: multiple pooling operators and transformations for fast and effective time series classification.</a>  Data Min. Know. Disc., 2022
+                                    </li>
+                                        <li>01/05/2022 <a href="https://arxiv.org/abs/2203.13652"> HYDRA: Competing convolutional kernels for fast and accurate time series classification</a> arxiv
+                                        </li>
+
+                                                                        <li>15/04/2021:<a href="https://link.springer.com/article/10.1007/s10994-021-06057-9">HIVE-COTE 2.0: a new meta ensemble for time series classification.</a>  Machine Learning, 2021</li>
+                                    <li>18/12/2020:<a href="https://link.springer.com/article/10.1007/s10618-020-00727-3"> The great multivariate time series classification bake off: a review and experimental evaluation of recent algorithmic advances. OPEN ACCESS.</a>  Data Min. Know. Disc., 2020</li>
+                                    <li>16/12/2020:<a href="https://link.springer.com/chapter/10.1007/978-3-030-65742-0_1"> On the Usage and Performance of The Hierarchical Vote Collective of Transformation-based Ensembles version 1.0 (HIVE-COTE 1.0) </a> in proc. AALTD workshop, 2020</li>
+                                    <li>10/12/2020:<a href="https://arxiv.org/abs/2008.09172"> The Canonical Interval Forest (CIF) Classifier for Time Series Classification </a> in proc.  in IEEE Int. Conf. on Big Data, 2020 </li>
+                                    <li>17/11/2020:<a href="https://people.eng.unimelb.edu.au/jianzhongq/papers/ICDM2020_TimeSeriesClassificationViaIntervalSearch.pdf"> Fast and Accurate Time Series Classification Through Supervised Interval Search </a> in proc. IEEE Int. Conf on Data Mining, 2020  </li>
+                                    <li> 14/9/2020: <a href="https://link.springer.com/article/10.1007/s10618-020-00710-y">InceptionTime: Finding AlexNet for Time Series Classification</a> Data Min. Know. Disc. 2020</li>
+                                    <li> 7/9/2020: <a href="https://ueaeprints.uea.ac.uk/id/eprint/75490/">The Temporal Dictionary Ensemble (TDE) Classifier for Time Series Classification</a> in proc. ECML-PKDD, 2020</li>
+                                    <li> 13/6/2020: <a href="https://link.springer.com/article/10.1007/s10618-020-00701-z"> ROCKET: Exceptionally fast and accurate time series classification using random convolutional kernels </a>  Data Min. Know. Disc.  34, 1454–1495, 2020</li>
+
+
+                                    <li> 5/3/2020 <a href="https://link.springer.com/article/10.1007/s10618-020-00679-8">TS-CHIEF: a scalable and accurate forest algorithm for time series classification</a>  Data Min. Know. Disc.  34,  2020</li>
+                                </ul>
+                                </p>
+                                        
+                                <p>  This website is an ongoing project to develop a comprehensive repository for research into time series classification. 
+The domain is owned by Tony Bagnall and maintained by his research group to help promote reproducable research. Unfortunately, we never have enough time to do it justice. If you are interested in sponsoring this website so we can develop it further, please get in touch.
+                                
+                                
+                                If you use the results or code, please cite the latest bake off paper "Matthew Middlehurst, Patrick Schäfer and Anthony Bagnall, "Bake off redux: a review and experimental evaluation of recent time series classification algorithms" 
+                                <a href="https://arxiv.org/abs/2304.13029"> ArXiv (under review)</a>
+                                </p>
+
+                            </div>
+                            <div id="description">
+                            <h2>TSC/TSCL/TSER Code</h2>
+                            <p> There are two code repositories associated with this website. The Java based, weka compatible toolkit <a href="https://github.com/uea-machine-learning/tsml/" target="_blank">tsml</a> and the python based, sklearn compatible <a href="https://github.com/aeon-toolkit/aeon" target="_blank">aeon</a>.
+            </p>
+                            </div>
+                            <div id="description">
+                                <h2>TSC/TSCL/TSER Results</h2>
+                                <p>We are in the process of refreshing and expanding the results sections, more information to follow.</p>
+                                <a>  <a href="https://www.timeseriesclassification.com/results/tsml/tsmlUnivariateResults.zip">Download</a> the tsml classification accuracy results for the 112 UCR univariate TSC problems presented in the <a href="https://link.springer.com/article/10.1007/S10618-016-0483-9">univariate bake off</a> and the <a href="https://link.springer.com/article/10.1007/s10994-021-06057-9">HC2 paper</a>.</p>
+                                <p> <a href="https://www.timeseriesclassification.com/results/tsml/tsmlMultivariateResults.zip">Download</a> the  tsml classification accuracy results for the 26 UEA multivariate TSC problems presented in <a href="https://link.springer.com/article/10.1007/s10618-020-00727-3">the multivariate bake off</a>  and the <a href="https://link.springer.com/article/10.1007/s10994-021-06057-9">HC2 paper</a>.</p>
+                                <p>Alternatively you can just download the results directly from the website in code. Tools for downloading, presenting and reproducing these results
+                                are in the following <a href="https://github.com/uea-machine-learning/estimator-evaluation/" target="_blank">GitHub repo.</a> This is a work in progress, we would welcome contributions.
+                                </p>
+                            </div>
+
+                            <!-- Citation Modal -->
+                            <div id="myModal" class="modal">
+                                <!-- Modal content -->
+                                <div class="modal-content">
+                                    <span class="close">×</span>
+                                    <h4>Bibtex Citation:</h4>
+                                    <p id="cite"><br>
+                                        @article{bagnall16bakeoff,<br>
+                                        title={The Great Time Series Classification Bake Off: a Review and Experimental Evaluation of Recent Algorithmic Advances},<br>
+                                        author={A. Bagnall and J. Lines and  A. Bostrom and J. Large and E. Keogh},<br>
+                                        journal={Data Mining and Knowledge Discovery},<br>
+                                        volume={31},<br>
+                                        issue={3},<br>
+                                        pages={606-660},<br>
+                                        year={2017}<br>
+                                        }<br>
+                                    </p>
+                                    <br>
+                                </div>
+                                <script>
+                                    var modal = document.getElementById('myModal');
+                                    var btn = document.getElementById('bibtex');
+                                    var span = document.getElementsByClassName("close")[0];
+
+                                    btn.onclick = function() {
+                                        modal.style.display = "block";
+                                    }
+
+                                    span.onclick = function() {
+                                        modal.style.display = "none";
+                                    }
+
+                                    window.onclick = function(event) {
+                                        if (event.target == modal) {
+                                            modal.style.display = "none";
+                                        }
+                                    }
+                                </script>
+                            </div>
+
+                             <div id="description">
+                                 <h2>TSC/TSCL Data</h2>
+                               <p> If you want to donate data, have any queries or problems with any of the datasets or want to give feedback on the website, please raise an issue on the associated <a href="https://github.com/uea-machine-learning/tsml_repo/issues" target="_blank">Github repo</a>.
+                                   </p>
+
+                                <p>The univariate TSC archive was relaunched in 2018 with 128 datasets.</p>
+
+                                 <h4><a href="https://www.timeseriesclassification.com/dataset.php">Download</a> all of the new 128 UCR Time Series Classification datasets</h4>
+                                <p> <A href="https://www.timeseriesclassification.com/aeon-toolkit/Archives/Univariate2018_arff.zip">Weka formatted ARFF files (and .txt files)</a> (about 500 MB).
+                                </p>
+                                <p><A href="https://www.timeseriesclassification.com/aeon-toolkit/Archives/Univariate2018_ts.zip">aeon formatted ts files</a> (about 250 MB).
+                                </p>
+                                <p> <A href="https://www.timeseriesclassification.com/dataset.php"> more info </a>
+The univariate TSC archive can be referenced with <A href="https://arxiv.org/abs/1810.07758">   this paper</a>. </p>
+
+                                 <p>The multivariate TSC archive was launched with 30 datasets in 2018.</p>
+                                 <h4><A href="https://www.timeseriesclassification.com/dataset.php">Download</A> all of the new 30 multivariate UEA Time Series Classification datasets</h4>
+                                <p> <A href="https://www.timeseriesclassification.com/aeon-toolkit/Archives/Multivariate2018_arff.zip">Weka formatted ARFF files (and .txt files)</a> (about 2 GB).
+                                </p>
+                                <p><A href="https://www.timeseriesclassification.com/aeon-toolkit/Archives/Multivariate2018_ts.zip">aeon formatted ts files</a> (about 1.5 GB).
+                                </p>
+                                <p> <A href="https://www.timeseriesclassification.com/dataset.php"> more info.</a>
+                                    The archive can be referenced with <A href="https://ieeexplore.ieee.org/document/8894743/">this paper</a>. </p>
+
+                            </div>
+                                
+                            </a>
+                            <div id="description">
+                                <p> If you want to use PyTorch with the tsc.com data, there is a repo to help with formatting  <a href="https://philipdarke.com/torchtime/">here.</a> It links to a python package that downloads and prepares the TSC data sets as PyTorch tensors.The package is independent of anyone associated with this website, and we have not tested it, but its a great idea so we are happy to share, and will try using it soon.
+                                </p>
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+
+    	</div>
+    </body>
+<footer class="footer">
+    <div>
+        <nav class="col-lg-12">
+            <!-- breadcrumb -->
+            <ul class="breadcrumb">
+                <li><a href="aboutus.php">About Us</a></li>
+                <li><a href="citationpolicy.php">Citation Policy</a></li>
+            </ul>
+        </nav>
+        <p><span class="glyphicon glyphicon-copyright-mark"></span> All rights reserved. Tony Bagnall 2023 - Time Series Classification. Created by William Vickers.</a></p>
+    </div>
+</footer>
+
+<!-- Javascript -->
+<script src="js/jquery.min.js"></script>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
+        
+<script src="js/bootstrap.min.js"></script>
+
+<script src="js/bootstrap-table.js"></script>
+
+<script src="js/bootstrap-table-en-US.js"></script>
+
+<script src="http://rawgit.com/wenzhixin/bootstrap-table-fixed-columns/master/bootstrap-table-fixed-columns.js"></script>
+
+<script src="js/custom.js"></script></html>

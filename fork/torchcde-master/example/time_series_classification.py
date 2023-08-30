@@ -53,9 +53,12 @@ class CDEFunc(torch.nn.Module):
 
 ######################
 # Next, we need to package CDEFunc up into a model that computes the integral.
+# sequence -> variable
 ######################
 class NeuralCDE(torch.nn.Module):
-    def __init__(self, input_channels, hidden_channels, output_channels, interpolation="cubic"):
+    def __init__(
+        self, input_channels, hidden_channels, output_channels, interpolation="cubic"
+    ):
         super(NeuralCDE, self).__init__()
 
         self.func = CDEFunc(input_channels, hidden_channels)
@@ -64,12 +67,14 @@ class NeuralCDE(torch.nn.Module):
         self.interpolation = interpolation
 
     def forward(self, coeffs):
-        if self.interpolation == 'cubic':
+        if self.interpolation == "cubic":
             X = torchcde.CubicSpline(coeffs)
-        elif self.interpolation == 'linear':
+        elif self.interpolation == "linear":
             X = torchcde.LinearInterpolation(coeffs)
         else:
-            raise ValueError("Only 'linear' and 'cubic' interpolation methods are implemented.")
+            raise ValueError(
+                "Only 'linear' and 'cubic' interpolation methods are implemented."
+            )
 
         ######################
         # Easy to forget gotcha: Initial hidden state should be a function of the first observation.
@@ -80,10 +85,7 @@ class NeuralCDE(torch.nn.Module):
         ######################
         # Actually solve the CDE.
         ######################
-        z_T = torchcde.cdeint(X=X,
-                              z0=z0,
-                              func=self.func,
-                              t=X.interval)
+        z_T = torchcde.cdeint(X=X, z0=z0, func=self.func, t=X.interval)
 
         ######################
         # Both the initial value and the terminal value are returned from cdeint; extract just the terminal value,
@@ -99,7 +101,7 @@ class NeuralCDE(torch.nn.Module):
 # Here we have a simple example which generates some spirals, some going clockwise, some going anticlockwise.
 ######################
 def get_data(num_timepoints=100):
-    t = torch.linspace(0., 4 * math.pi, num_timepoints)
+    t = torch.linspace(0.0, 4 * math.pi, num_timepoints)
 
     start = torch.rand(128) * 2 * math.pi
     x_pos = torch.cos(start.unsqueeze(1) + t.unsqueeze(0)) / (1 + 0.5 * t)
@@ -143,7 +145,9 @@ def main(num_epochs=30):
     # The resulting `train_coeffs` is a tensor describing the path.
     # For most problems, it's probably easiest to save this tensor and treat it as the dataset.
     ######################
-    train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(train_X)
+    train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(
+        train_X
+    )
 
     train_dataset = torch.utils.data.TensorDataset(train_coeffs, train_y)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=32)
@@ -155,7 +159,7 @@ def main(num_epochs=30):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-        print('Epoch: {}   Training loss: {}'.format(epoch, loss.item()))
+        print("Epoch: {}   Training loss: {}".format(epoch, loss.item()))
 
     test_X, test_y = get_data()
     test_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(test_X)
@@ -163,8 +167,8 @@ def main(num_epochs=30):
     binary_prediction = (torch.sigmoid(pred_y) > 0.5).to(test_y.dtype)
     prediction_matches = (binary_prediction == test_y).to(test_y.dtype)
     proportion_correct = prediction_matches.sum() / test_y.size(0)
-    print('Test Accuracy: {}'.format(proportion_correct))
+    print("Test Accuracy: {}".format(proportion_correct))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
