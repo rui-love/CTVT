@@ -242,6 +242,8 @@ def cal_id_acc(predict, target, trg_len):
         for len_i in range(trg_len[bs_i] - 1):
             pre_id = predict[bs_i][len_i].argmax()
             trg_id = target[bs_i][len_i]
+            if trg_id == 0:
+                continue
             pre_ids.append(pre_id)
             trg_ids.append(trg_id)
             if pre_id == trg_id:
