@@ -10,7 +10,7 @@
 # In every case, the only thing that needs changing is the data preprocessing. You won't need to change your model at
 # all.
 #
-# Note that there's little magical going on here -- the way in which we're going to prepare the data is actually 
+# Note that there's little magical going on here -- the way in which we're going to prepare the data is actually
 # pretty similar to how we would do so for an RNN etc.
 ######################
 
@@ -21,6 +21,7 @@ import torchcde
 ######################
 # We begin with a helper for solving a CDE over some data.
 ######################
+
 
 def _solve_cde(x):
     # x should be a tensor of shape (..., length, channels), and may have missing data represented by NaNs.
@@ -38,12 +39,15 @@ def _solve_cde(x):
             super(F, self).__init__()
             # For illustrative purposes only. You should usually use an MLP or something. A single linear layer won't be
             # that great.
-            self.linear = torch.nn.Linear(hidden_channels,
-                                          hidden_channels * input_channels)
+            self.linear = torch.nn.Linear(
+                hidden_channels, hidden_channels * input_channels
+            )
 
         def forward(self, t, z):
             batch_dims = z.shape[:-1]
-            return self.linear(z).tanh().view(*batch_dims, hidden_channels, input_channels)
+            return (
+                self.linear(z).tanh().view(*batch_dims, hidden_channels, input_channels)
+            )
 
     class Model(torch.nn.Module):
         def __init__(self):
@@ -70,6 +74,7 @@ def _solve_cde(x):
 # Okay, now for the meat of it: handling irregular data.
 ######################
 
+
 def irregular_data():
     ######################
     # Begin by generating some example data.
@@ -94,8 +99,8 @@ def irregular_data():
         # First get all the times that the batch element was sampled at, across all channels.
         t, sort_indices = torch.cat([ta, tb]).sort()
         # Now add NaNs to each channel where the other channel was sampled.
-        xa_ = torch.cat([xa, torch.full_like(xb, float('nan'))])[sort_indices]
-        xb_ = torch.cat([torch.full_like(xa, float('nan')), xb])[sort_indices]
+        xa_ = torch.cat([xa, torch.full_like(xb, float("nan"))])[sort_indices]
+        xb_ = torch.cat([torch.full_like(xa, float("nan")), xb])[sort_indices]
         # Add observational masks
         maska = (~torch.isnan(xa_)).cumsum(dim=0)
         maskb = (~torch.isnan(xb_)).cumsum(dim=0)
@@ -117,7 +122,9 @@ def irregular_data():
     max_length = max(x1.size(0), x2.size(0), x3.size(0))
 
     def fill_forward(x):
-        return torch.cat([x, x[-1].unsqueeze(0).expand(max_length - x.size(0), x.size(1))])
+        return torch.cat(
+            [x, x[-1].unsqueeze(0).expand(max_length - x.size(0), x.size(1))]
+        )
 
     x1 = fill_forward(x1)
     x2 = fill_forward(x2)
@@ -154,10 +161,10 @@ def irregular_data():
     # We made sure not to lose any information (due to the interpolation) by adding extra channels corresponding to
     # (cumulative) masks for whether a channel has been updated. This means that the the NCDE knows how out-of-date
     # (or perhaps "how reliable") its input information is.
-    #
+
     # This is sometimes called "informative missingness": e.g. the notion that doctors may take more frequest
     # measurments of patients they believe to be at risk, so the mere presence of an observation tells you something.
-    #
+
     # That's not 100% accurate, though. These extra channels should always be included when you have missing data, even
     # if the missingness probably isn't important. That's simply so the network knows how out-of-date its input is, and
     # thus how much it can trust it.

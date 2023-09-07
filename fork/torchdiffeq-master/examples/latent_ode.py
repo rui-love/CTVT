@@ -146,6 +146,7 @@ class RecognitionRNN(nn.Module):
         return torch.zeros(self.nbatch, self.nhidden)
 
 
+# from hidden state get output
 class Decoder(nn.Module):
     def __init__(self, latent_dim=4, obs_dim=2, nhidden=20):
         super(Decoder, self).__init__()
@@ -185,6 +186,7 @@ def log_normal_pdf(x, mean, logvar):
     return -0.5 * (const + logvar + (x - mean) ** 2.0 / torch.exp(logvar))
 
 
+# 正态分布的KL散度
 def normal_kl(mu1, lv1, mu2, lv2):
     v1 = torch.exp(lv1)
     v2 = torch.exp(lv2)
@@ -266,7 +268,7 @@ if __name__ == "__main__":
             logpx = log_normal_pdf(samp_trajs, pred_x, noise_logvar).sum(-1).sum(-1)
             pz0_mean = pz0_logvar = torch.zeros(z0.size()).to(device)
             analytic_kl = normal_kl(qz0_mean, qz0_logvar, pz0_mean, pz0_logvar).sum(-1)
-            loss = torch.mean(-logpx + analytic_kl, dim=0)
+            loss = torch.mean(-logpx + analytic_kl, dim=0)  # 最小化-ELBO
             loss.backward()
             optimizer.step()
             loss_meter.update(loss.item())

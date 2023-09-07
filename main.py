@@ -213,6 +213,8 @@ if __name__ == "__main__":
 
         recall = 0
         precision = 0
+        mse = 0
+        rmse = 0
 
         with torch.no_grad():
             for batch in tqdm(test_iterator):
@@ -239,11 +241,24 @@ if __name__ == "__main__":
                     eid_result[1:], trg_eid[1:], trg_len
                 )
 
+                # for rate cal mse and rmse
+                loss_rate = torch.sqrt(
+                    criterion_rate(rate_result[1:], trg_rate[1:]) * args.rate_weight
+                )
+
+                mse = torch.mean((rate_result[1:] - trg_rate[1:]) ** 2)
+                rmse = torch.sqrt(mse)
+
                 recall += recall
                 precision += precision
 
+                mse += mse
+                rmse += rmse
+
             print("recall", recall / len(test_iterator))
             print("precision", precision / len(test_iterator))
+            print("mse", mse / len(test_iterator))
+            print("rmse", rmse / len(test_iterator))
 
     # # PLOT
     # plt.plot(train_loss, label="train loss")
