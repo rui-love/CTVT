@@ -1,0 +1,1 @@
+{"S0": 1, "correlation": 0.5, "dimension": 1, "drift": 2.0, "dt": 0.01, "maturity": 1.0, "mean": 4, "model_name": "BlackScholes", "nb_paths": 20000, "nb_steps": 100, "obs_perc": 0.1, "return_vol": false, "scheme": "euler", "speed": 2.0, "v0": 1, "volatility": 0.3}

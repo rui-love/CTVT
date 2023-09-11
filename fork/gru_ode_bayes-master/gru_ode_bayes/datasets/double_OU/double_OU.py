@@ -86,7 +86,7 @@ def OU_sample(
 
         if full:
             sample_times = np.arange(N_t)
-            sample_type = (np.ones(N_t) * 2).astype(np.int)
+            sample_type = (np.ones(N_t) * 2).astype(int)
             num_samples = N_t
         else:
             sample_times = np.random.choice(N_t, num_samples, replace=False)
