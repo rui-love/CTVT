@@ -103,6 +103,57 @@ class DecoderMulti(nn.Module):
         return pre_eid_1, pre_rate_3, hidden
 
 
+class DecoderConstrain(nn.Module):
+    def __init__(self, params):
+        super(DecoderConstrain, self).__init__()
+
+        self.eid_size = params["eid_size"]
+        self.rate_size = params["rate_size"]
+        self.nearby_size = params["nearby_size"]
+        self.emb_dim = params["embedding_size"]
+        self.hidden_dim = params["hidden_size"]
+
+        self.embedding = nn.Embedding(self.eid_size, self.emb_dim)
+        self.rnn = nn.GRU(
+            self.emb_dim + self.nearby_size + self.rate_size, self.hidden_dim
+        )
+        self.dropout = nn.Dropout(params["dropout_rate"])
+
+        self.pre_eid = nn.Linear(self.hidden_dim, self.nearby_size)
+        self.pre_rate_1 = nn.Linear(self.hidden_dim + self.emb_dim, self.hidden_dim)
+        self.pre_rate_2 = nn.Linear(self.hidden_dim, self.rate_size)
+
+    def forward(self, eid, nearby, rate, hidden):
+        """
+        forward
+        """
+        # eid = [batch_size]
+        # nearby = [batch_size, nearby_size]
+        # rate = [batch_size]
+        # hidden = [1, batch_size, hidden_dim]
+
+        eid_embbeded = self.embedding(eid.unsqueeze(0))
+        rnn_input = torch.cat(
+            (eid_embbeded, nearby.unsqueeze(0), rate.reshape(1, -1, 1)), dim=2
+        )
+        output, hidden = self.rnn(rnn_input, hidden)
+
+        pre_eid_1 = F.log_softmax(self.pre_eid(output.squeeze(0)), dim=1)
+        pre_eid_2 = nearby.gather(
+            1, pre_eid_1.argmax(dim=1).long().unsqueeze(1)
+        ).squeeze(1)
+
+        pre_rate_1 = self.pre_rate_1(
+            torch.cat(
+                (self.dropout(self.embedding(pre_eid_2)), output.squeeze(0)), dim=1
+            )
+        )
+        pre_rate_2 = self.pre_rate_2(F.relu(pre_rate_1)).squeeze(1)
+        pre_rate_3 = F.sigmoid(pre_rate_2)
+
+        return pre_eid_1, pre_rate_3, hidden
+
+
 class Seq2SeqMulti(nn.Module):
     """
     Seq2Seq
@@ -113,7 +164,10 @@ class Seq2SeqMulti(nn.Module):
 
         self.params = params
         self.encoder = Encoder(params["Encoder"])
-        self.decoder = DecoderMulti(params["Decoder"])
+        if params["Decoder"]["constrain"]:
+            self.decoder = DecoderConstrain(params["Decoder"])
+        else:
+            self.decoder = DecoderMulti(params["Decoder"])
 
     def forward(self, src, src_len, trg_eid, trg_rate, teacher_forcing_ratio=0):
         """
@@ -129,10 +183,14 @@ class Seq2SeqMulti(nn.Module):
 
         max_trg_len = trg_eid.shape[0]
         batch_size = trg_eid.shape[1]
-
-        eid_result = torch.zeros(
-            max_trg_len, batch_size, self.params["Decoder"]["eid_size"]
-        ).to(device)
+        if self.params["DecoderConstraint"]:
+            eid_result = torch.zeros(
+                max_trg_len, batch_size, self.params["Decoder"]["nearby_size"]
+            ).to(device)
+        else:
+            eid_result = torch.zeros(
+                max_trg_len, batch_size, self.params["Decoder"]["eid_size"]
+            ).to(device)
         rate_result = torch.zeros(max_trg_len, batch_size).to(device)
 
         eid = trg_eid[0]

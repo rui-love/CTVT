@@ -44,7 +44,7 @@ class TrajDataset(torch.utils.data.Dataset):
     def get_data(self):
         for traj in tqdm(self.traj):
             traj_sample = self.downsample_traj(
-                traj[:, [0, 1, 4, 2, 3]], self.ds_type, self.keep_ratio
+                traj[:, [0, 1, 8, 2, 3, 7]], self.ds_type, self.keep_ratio
             )
             # grid_x, grid_y, src_lat, src_lng, trg_lat, trg_lng, ratio, edge_id, tid
 
@@ -85,6 +85,8 @@ class TrajDataset(torch.utils.data.Dataset):
         ], "only `uniform` or `random` is supported"
 
         old_traj = traj.copy()
+        old_traj = traj[np.where(traj[:, -1] != 0)]
+        keep_ratio = traj.shape[0] * keep_ratio / (old_traj.shape[0])
         start_pt = old_traj[0].reshape(1, -1)
         end_pt = old_traj[-1].reshape(1, -1)
 
@@ -103,7 +105,7 @@ class TrajDataset(torch.utils.data.Dataset):
             )
             new_traj = np.concatenate((start_pt, old_traj[sampled_inds], end_pt))
 
-        return new_traj
+        return new_traj[:-1]
 
 
 def collate_fn(data):

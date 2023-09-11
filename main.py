@@ -22,15 +22,16 @@ if __name__ == "__main__":
     parser.add_argument("--rate_weight", "-r", type=float, default=10)
     parser.add_argument("--keep_ratio", "-k", type=float, default=0.5)
     parser.add_argument("--train", "-t", action="store_true")
+    parser.add_argument("--gpu", "-g", type=int, default=0)
     args = parser.parse_args()
 
     # DEVICE
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu")
 
     # DATASETS & DATALOADERS
-    trajectory = pickle.load(
-        open("./data/traj_final_all.pkl", "rb")
-    )  # 130153个轨迹, 5912767个轨迹点
+    trajectory = pickle.load(open("./data/traj_final_all.pkl", "rb"))[
+        :10000
+    ]  # 130153个轨迹, 5912767个轨迹点
 
     # train:valid:test = 7:2:1
     train_data = trajectory[: int(len(trajectory) * 0.7)]
@@ -51,11 +52,13 @@ if __name__ == "__main__":
     params = {
         "Encoder": {"input_dim": 3, "hid_dim": 512, "dropout": 0.5},
         "Decoder": {
+            "DecoderConstrain": True,
             "eid_size": 30000,
             "rate_size": 1,
             "embedding_size": 128,
             "hidden_size": 512,
             "dropout_rate": 0.5,
+            "nearby_size": 260,
         },
     }
     model = Seq2SeqMulti(params).to(device)
@@ -92,7 +95,8 @@ if __name__ == "__main__":
                 # trg_len = tuple(int)[batch size]
 
                 optimizer.zero_grad()
-                eid_result, rate_result = model(src, src_len, trg_eid, trg_rate)
+                with torch.cuda.device(device):
+                    eid_result, rate_result = model(src, src_len, trg_eid, trg_rate)
                 # break
                 # eid_result = [trg len, batch size, id one hot output dim]
                 # rate_result = [trg len, batch size]
