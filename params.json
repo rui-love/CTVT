@@ -1,0 +1,23 @@
+{
+    "Encoder": {
+        "input_dim": 3,
+        "hid_dim": 512,
+        "dropout": 0.5
+    },
+    "Decoder": {
+        "DecoderConstrain": false,
+        "eid_size": 30000,
+        "rate_size": 1,
+        "embedding_size": 128,
+        "hidden_size": 512,
+        "dropout_rate": 0.5
+    },
+    "DecoderConstrain": {
+        "eid_size": 30000,
+        "rate_size": 1,
+        "embedding_size": 128,
+        "hidden_size": 512,
+        "dropout_rate": 0.5,
+        "nearby_size": 260
+    }
+}

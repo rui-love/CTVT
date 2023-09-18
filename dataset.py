@@ -1,5 +1,5 @@
 import random
-import pickle
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 import torch
 import numpy as np
@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 
 class TrajDataset(torch.utils.data.Dataset):
-    def __init__(self, traj, keep_ratio=0.5, ds_type="random"):
+    def __init__(self, traj, keep_ratio=0.5, ds_type="random", token=True):
         # init函数的作用：输入原始数据
 
         self.traj = traj
@@ -22,6 +22,7 @@ class TrajDataset(torch.utils.data.Dataset):
 
         self.keep_ratio = keep_ratio
         self.ds_type = ds_type
+        self.token = token
 
         self.get_data()
 
@@ -45,16 +46,18 @@ class TrajDataset(torch.utils.data.Dataset):
         for traj in tqdm(self.traj):
             traj_sample = self.downsample_traj(
                 traj[:, [0, 1, 8, 2, 3, 7]], self.ds_type, self.keep_ratio
-            )
+            )  # 加入7是为了保证src中不含eid为空的点
             # grid_x, grid_y, src_lat, src_lng, trg_lat, trg_lng, ratio, edge_id, tid
 
-            traj = np.concatenate((np.zeros((1, 9)), traj))
+            if self.token:
+                traj = np.concatenate((np.zeros((1, 9)), traj))
             self.trg_gps.append(torch.Tensor(traj[:, [4, 5]]))
             self.trg_eid.append(torch.LongTensor(traj[:, 7]))
             self.trg_rate.append(torch.Tensor(traj[:, 6]))
             self.trg_len.append(len(traj))
 
-            traj_sample = np.concatenate((np.zeros((1, 5)), traj_sample))
+            if self.token:
+                traj_sample = np.concatenate((np.zeros((1, 5)), traj_sample))
             self.src.append(torch.Tensor(traj_sample[:, :3]))
             self.src_gps.append(torch.Tensor(traj_sample[:, 3:]))
             self.src_len.append(len(traj_sample))
@@ -105,7 +108,52 @@ class TrajDataset(torch.utils.data.Dataset):
             )
             new_traj = np.concatenate((start_pt, old_traj[sampled_inds], end_pt))
 
-        return new_traj[:-1]
+        return new_traj[:, :-1]
+
+
+def batch2device(batch, device):
+    src, src_gps, src_len, trg_gps, trg_eid, trg_rate, trg_len = batch
+
+    src = src.to(device)
+    src_gps = src_gps.to(device)
+    trg_gps = trg_gps.to(device)
+    trg_eid = trg_eid.to(device)
+    trg_rate = trg_rate.to(device)
+
+    # src = [src len, batch size, 3]
+    # src_gps = [src len, batch size, 2]
+    # src_len = tuple(int)[batch size]
+    # trg_gps = [trg len, batch size, 2]
+    # trg_eid = [trg len, batch size]
+    # trg_rate = [trg len, batch size]
+    # trg_len = tuple(int)[batch size]
+
+    return src, src_gps, src_len, trg_gps, trg_eid, trg_rate, trg_len
+
+
+def collate_fn_ode(data):
+    """
+    Collate function for DataLoader
+    """
+    data.sort(key=lambda x: x[2], reverse=True)
+    src, src_gps, src_len, trg_gps, trg_eid, trg_rate, trg_len = zip(*data)
+    batch = len(src)
+    src_ = torch.zeros(trg_len[0], len(src), src[0].shape[-1]) - 1
+    src_gps_ = torch.zeros(trg_len[0], len(src), src_gps[0].shape[-1])
+    src_len = torch.zeros(batch, src_len[0])
+    for i in range(batch):
+        idx = (src[i][:, -1] - src[i][0, -1]).long()
+        src_[idx, i, :] = src[i]
+        src_gps_[idx, i, :] = src_gps[i]
+        src_len[i, : len(idx)] = idx
+    src_len = torch.unique(
+        src_len,
+    ).long()
+    trg_gps = torch.nn.utils.rnn.pad_sequence(trg_gps, padding_value=0)
+    trg_eid = torch.nn.utils.rnn.pad_sequence(trg_eid, padding_value=0)
+    trg_rate = torch.nn.utils.rnn.pad_sequence(trg_rate, padding_value=0)
+
+    return src_, src_gps_, src_len, trg_gps, trg_eid, trg_rate, trg_len
 
 
 def collate_fn(data):
@@ -123,7 +171,7 @@ def collate_fn(data):
     return src, src_gps, src_len, trg_gps, trg_eid, trg_rate, trg_len
 
 
-def get_iterator(dataset, batch_size):
+def get_iterator(dataset, batch_size, ode=False):
     """
     获得dataloader
     """
@@ -131,8 +179,37 @@ def get_iterator(dataset, batch_size):
         dataset,
         batch_size=batch_size,
         shuffle=True,
-        collate_fn=collate_fn,
+        collate_fn=collate_fn_ode if ode else collate_fn,
         pin_memory=True,
     )
 
     return iterator
+
+
+def plot_record(record: np.ndarray, keep_ratio: float, model_name: str):
+    """
+    根据record画图
+
+    Input:
+        record: np.ndarray, shape=(3, 5, epoch)
+        keep_ratio: float, keep ratio
+
+    Output:
+        saved figure
+    """
+    data_name = ["train", "valid", "test"]
+    record_name = ["Recall", "Precision", "MSE", "RMSE", "Loss"]
+    for j in range(5):
+        plt.figure()
+        for i in range(3):
+            plt.plot(record[i, j, :], label=data_name[i])
+            plt.title(f"{model_name} with Keep Ratio: {keep_ratio:.2%}", fontsize=18)
+            plt.ylabel(record_name[j], fontsize=16)
+            plt.xlabel("Epoch", fontsize=16)
+            plt.xticks(fontsize=16)
+            plt.yticks(fontsize=16)
+            plt.legend(fontsize=16)
+
+        plt.tight_layout()
+        plt.savefig(f"./data/figure/{record_name[j]}_{keep_ratio}.png")
+        plt.close()

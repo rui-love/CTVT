@@ -41,3 +41,7 @@ encoder, decoder, multi-task
 ## MTrajRec-main
 
     原始文献中的代码
+
+## RUN
+
+    python main.py -g 0 -k 0.125
